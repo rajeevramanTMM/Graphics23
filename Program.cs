@@ -55,25 +55,20 @@ class MyWindow : Window {
       if (down) dy = -dy;
       int diff = (2 * dy) - dx;
       int y = y0;
-      for (int x = x0; x <= x1; x++) {
-         try {
-            mBmp.Lock ();
+      try {
+         mBmp.Lock ();
+         for (int x = x0; x <= x1; x++) {
             mBase = mBmp.BackBuffer;
-            if (swap) {
-               SetPixel (y, x, 255);
-               mBmp.AddDirtyRect (new Int32Rect (y, x, 1, 1));
-            } else {
-               SetPixel (x, y, 255);
-               mBmp.AddDirtyRect (new Int32Rect (x, y, 1, 1));
-            }
-         } finally { mBmp.Unlock (); }
-         if (diff >= 0) {
-            y += down ? -1 : 1;
-            diff = diff + (2 * (dy - dx));
-         } else {
-            diff = diff + 2 * dy;
+            if (swap) SetPixel (y, x, 255);
+            else SetPixel (x, y, 255);
+            if (diff >= 0) {
+               y += down ? -1 : 1;
+               diff += 2 * (dy - dx);
+            } else
+               diff += 2 * dy;
          }
-      }
+         mBmp.AddDirtyRect (new Int32Rect (0, 0, mBmp.PixelWidth, mBmp.PixelHeight));
+      } finally { mBmp.Unlock (); }
    }
 
    Point? mStart = null;
