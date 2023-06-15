@@ -24,10 +24,59 @@ class MyWindow : Window {
       mStride = mBmp.BackBufferStride;
       image.Source = mBmp;
       Content = image;
+      MouseDown += OnMouseDown;
 
-      DrawMandelbrot (-0.5, 0, 1);
+      KeyDown += (s, e) => {
+         if (e.Key == Key.Escape) { Close (); }
+      };
+      DrawLine (new Point (100, 100), new Point (100, 200));
+      DrawLine (new Point (100, 200), new Point (200, 200));
+      DrawLine (new Point (200, 200), new Point (200, 100));
+      DrawLine (new Point (200, 100), new Point (100, 100));
+
+      //DrawMandelbrot (-0.5, 0, 1);
    }
 
+   void OnMouseDown (object sender, MouseButtonEventArgs e) {
+      if (mStart == null) { mStart = e.GetPosition (this); return; }
+      var endPt = e.GetPosition (this);
+      DrawLine (mStart.Value, endPt);
+      mStart = null;
+   }
+
+   void DrawLine (Point start, Point end) {
+      (int x0, int y0, int x1, int y1) = ((int)start.X, (int)start.Y, (int)end.X, (int)end.Y);
+      int dx = x1 - x0, dy = y1 - y0;
+      var swap = Math.Abs (dy) > Math.Abs (dx);
+      if (swap) (x0, y0, x1, y1) = (y0, x0, y1, x1);
+      if (x0 > x1) (x0, y0, x1, y1) = (x1, y1, x0, y0);
+      dx = x1 - x0; dy = y1 - y0;
+      bool down = y0 > y1;
+      if (down) dy = -dy;
+      int diff = (2 * dy) - dx;
+      int y = y0;
+      for (int x = x0; x <= x1; x++) {
+         try {
+            mBmp.Lock ();
+            mBase = mBmp.BackBuffer;
+            if (swap) {
+               SetPixel (y, x, 255);
+               mBmp.AddDirtyRect (new Int32Rect (y, x, 1, 1));
+            } else {
+               SetPixel (x, y, 255);
+               mBmp.AddDirtyRect (new Int32Rect (x, y, 1, 1));
+            }
+         } finally { mBmp.Unlock (); }
+         if (diff >= 0) {
+            y += down ? -1 : 1;
+            diff = diff + (2 * (dy - dx));
+         } else {
+            diff = diff + 2 * dy;
+         }
+      }
+   }
+
+   Point? mStart = null;
    void DrawMandelbrot (double xc, double yc, double zoom) {
       try {
          mBmp.Lock ();
