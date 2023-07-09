@@ -4,6 +4,7 @@ using System.Windows;
 using System.Windows.Media;
 using System.Windows.Controls;
 using System.Windows.Threading;
+using System.IO;
 
 namespace GrayBMP;
 
@@ -29,8 +30,25 @@ class LinesWin : Window {
       DispatcherTimer timer = new () {
          Interval = TimeSpan.FromMilliseconds (100), IsEnabled = true,
       };
-      timer.Tick += NextFrame;
+      //timer.Tick += NextFrame;
+      Loaded += LoadPolyFill;
    }
+
+   void LoadPolyFill (object sender, EventArgs e) {
+      var lines = new List<int[]> ();
+      foreach (var line in File.ReadAllLines ("C:/etc/leaf-fill.txt"))
+         lines.Add (line.Split (' ').Select (int.Parse).ToArray ());
+      using (new BlockTimer ("Poly lines")) {
+         mBmp.Begin ();
+         mBmp.Clear (0);
+         var polyFill = new PolyFill ();
+         foreach (var line in lines)
+            polyFill.AddLine (line[0], line[1], line[2], line[3]);
+         polyFill.Fill (mBmp, 255);
+         mBmp.End ();
+      }
+   }
+
    readonly GrayBMP mBmp;
    readonly int mDX, mDY;
 

@@ -1,6 +1,7 @@
 // GrayBMP.cs - Contains the GrayBMP class (implementation of grayscale bitmp on top
 // of a WPF WriteableBitmap class)
 // ---------------------------------------------------------------------------------------
+using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
@@ -102,6 +103,19 @@ class GrayBMP {
             }
          }
       }
+      End ();
+   }
+
+   public void DrawHorizontalLine (int x1, int x2, int y, int color) {
+      Begin ();
+      byte bColor = (byte)color;
+      Check (x1, y); Check (x2, y);
+      Dirty (x1, y); Dirty (x2, y);
+      if (x2 < x1) (x2, x1) = (x1, x2);
+      unsafe {
+         byte* ptr = (byte*)(Buffer + y * mStride + x1);
+         System.Runtime.CompilerServices.Unsafe.InitBlock (ref *ptr, bColor, (uint)(x2 - x1));
+      };
       End ();
    }
 
