@@ -2,13 +2,13 @@
 
 namespace GrayBMP {
    class PolyFill {
-      public void AddLine (int x0, int y0, int x1, int y1) => mVertices.Add (new (x0, y0, x1, y1));
+      public void AddLine (int x0, int y0, int x1, int y1) => mEdges.Add (new (x0, y0, x1, y1));
       public void Fill (GrayBMP bmp, int color) {
          var width = bmp.Width - 1;
          for (int i = 0; i < width; i++) {
             var pts = new List<int> ();
-            foreach (var vertex in mVertices) {
-               if (vertex.ScanIntersection (new Point (1, i), new Point (width, i), out double resX))
+            foreach (var egde in mEdges) {
+               if (egde.ScanIntersection (new Point (1, i), new Point (width, i), out double resX))
                   pts.Add ((int)resX);
             }
             pts = pts.Order ().ToList ();
@@ -17,9 +17,9 @@ namespace GrayBMP {
          }
       }
 
-      /// <summary>Creates a vertex for a given points.</summary>
-      class PVertex {
-         public PVertex (int x0, int y0, int x1, int y1) { Point1 = new Point (x0, y0); Point2 = new Point (x1, y1); }
+      /// <summary>Creates a edge of a polygon for a given points.</summary>
+      class PEdge {
+         public PEdge (int x0, int y0, int x1, int y1) { Point1 = new Point (x0, y0); Point2 = new Point (x1, y1); }
          public Point Point1 { get; private set; }
          public Point Point2 { get; private set; }
 
@@ -50,6 +50,6 @@ namespace GrayBMP {
             }
          }
       }
-      List<PVertex> mVertices = new ();
+      List<PEdge> mEdges = new ();
    }
 }
